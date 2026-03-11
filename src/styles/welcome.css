@@ -1,0 +1,84 @@
+#welcome-screen {
+  position: absolute;
+  top: var(--toolbar-height);
+  left: 0;
+  right: 0;
+  bottom: var(--status-bar-height);
+  background: var(--bg-app);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+#welcome-screen.visible {
+  display: flex;
+}
+
+.welcome-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.welcome-content h1 {
+  font-size: 2.5em;
+  font-weight: 300;
+  margin-bottom: 0.25em;
+  color: var(--text-primary);
+}
+
+.welcome-content .tagline {
+  color: var(--text-muted);
+  font-size: 1.1em;
+  margin-bottom: 2em;
+  font-style: italic;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 2em;
+}
+
+.welcome-actions button {
+  padding: 10px 24px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-weight: 500;
+  background: var(--bg-toolbar);
+}
+
+.welcome-actions button:hover {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+#recent-files h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+#recent-list {
+  list-style: none;
+  padding: 0;
+}
+
+.recent-file-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.recent-file-btn:hover {
+  background: var(--hover-bg);
+  color: var(--accent);
+}

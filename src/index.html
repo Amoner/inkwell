@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inkwell</title>
+    <link rel="stylesheet" href="./styles/variables.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/layout.css" />
+    <link rel="stylesheet" href="./styles/editor.css" />
+    <link rel="stylesheet" href="./styles/preview.css" />
+    <link rel="stylesheet" href="./styles/welcome.css" />
+    <link rel="stylesheet" href="./styles/theme-light.css" />
+    <link rel="stylesheet" href="./styles/theme-dark.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="toolbar">
+        <div class="toolbar-left">
+          <button id="btn-new" title="New file (Ctrl/Cmd+N)">New</button>
+          <button id="btn-open" title="Open file (Ctrl/Cmd+O)">Open</button>
+          <button id="btn-save" title="Save file (Ctrl/Cmd+S)">Save</button>
+        </div>
+        <div class="toolbar-center">
+          <span id="file-title">Untitled</span>
+          <span id="dirty-indicator" class="hidden">*</span>
+        </div>
+        <div class="toolbar-right">
+          <button id="btn-view-editor" title="Editor only" class="view-btn">Edit</button>
+          <button id="btn-view-split" title="Split view" class="view-btn active">Split</button>
+          <button id="btn-view-preview" title="Preview only" class="view-btn">Preview</button>
+          <button id="btn-theme" title="Toggle theme (Ctrl/Cmd+Shift+T)">Theme</button>
+          <button id="btn-close" title="Close Inkwell" class="btn-close">&#x2715;</button>
+        </div>
+      </div>
+      <div id="main-content">
+        <div id="editor-pane"></div>
+        <div id="divider"></div>
+        <div id="preview-pane">
+          <div id="preview-content"></div>
+        </div>
+      </div>
+      <div id="status-bar">
+        <span id="status-file-info"></span>
+        <span id="status-cursor">Ln 1, Col 1</span>
+        <span id="status-word-count">0 words</span>
+      </div>
+      <div id="welcome-screen">
+        <div class="welcome-content">
+          <h1>Inkwell</h1>
+          <p class="tagline">Markdown, distilled.</p>
+          <div class="welcome-actions">
+            <button id="welcome-new">New File</button>
+            <button id="welcome-open">Open File</button>
+          </div>
+          <div id="recent-files">
+            <h3>Recent Files</h3>
+            <ul id="recent-list"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

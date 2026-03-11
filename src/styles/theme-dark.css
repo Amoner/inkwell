@@ -1,0 +1,24 @@
+[data-theme="dark"] {
+  --bg-app: #1e1e1e;
+  --bg-editor: #1e1e1e;
+  --bg-preview: #252525;
+  --bg-toolbar: #2d2d2d;
+  --bg-status: #2d2d2d;
+  --bg-gutter: #252525;
+  --bg-inline-code: #3a3a3a;
+  --bg-code-block: #2d2d2d;
+  --bg-blockquote: #2a2a2a;
+  --bg-table-header: #2d2d2d;
+
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #777777;
+
+  --border: #3a3a3a;
+  --hover-bg: rgba(255, 255, 255, 0.08);
+  --selection-bg: rgba(66, 133, 244, 0.3);
+  --active-line-bg: rgba(255, 255, 255, 0.04);
+
+  --accent: #60a5fa;
+  --accent-text: #1a1a1a;
+}

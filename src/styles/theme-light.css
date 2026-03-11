@@ -1,0 +1,25 @@
+[data-theme="light"],
+:root {
+  --bg-app: #ffffff;
+  --bg-editor: #ffffff;
+  --bg-preview: #fafafa;
+  --bg-toolbar: #f5f5f5;
+  --bg-status: #f5f5f5;
+  --bg-gutter: #fafafa;
+  --bg-inline-code: #f0f0f0;
+  --bg-code-block: #f6f8fa;
+  --bg-blockquote: #f9f9f9;
+  --bg-table-header: #f6f8fa;
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --text-muted: #999999;
+
+  --border: #e0e0e0;
+  --hover-bg: rgba(0, 0, 0, 0.06);
+  --selection-bg: rgba(66, 133, 244, 0.2);
+  --active-line-bg: rgba(0, 0, 0, 0.03);
+
+  --accent: #2563eb;
+  --accent-text: #ffffff;
+}

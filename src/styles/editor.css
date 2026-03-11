@@ -1,0 +1,18 @@
+/* CodeMirror overrides */
+.cm-editor {
+  font-size: var(--font-size-editor);
+  line-height: 1.6;
+}
+
+.cm-editor .cm-scroller {
+  font-family: var(--font-mono);
+  padding: 0;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
+}
+
+.cm-editor .cm-line {
+  padding: 0 16px;
+}
