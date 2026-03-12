@@ -34,21 +34,27 @@ async function init() {
     document.getElementById("status-cursor").textContent = `Ln ${pos.line}, Col ${pos.col}`;
   });
 
-  setupMenuListeners();
   setupToolbar();
   setupDragDrop();
   setupViewButtons();
   setupDivider();
   setupResponsiveLayout();
   setupFileWatcherListener();
+  setupOpenFileListener();
 
-  // Scroll sync (after editor is created)
+  // Scroll sync
   const view = getEditorView();
   if (view) {
     setupScrollSync(view, document.getElementById("preview-pane"));
   }
 
-  await showWelcome();
+  // Check if app was launched with a file argument (file association / "Open With")
+  const fileArg = await invoke("get_open_file_arg");
+  if (fileArg) {
+    await loadFile(fileArg);
+  } else {
+    await showWelcome();
+  }
 }
 
 // --- File operations ---
@@ -60,6 +66,7 @@ async function newFile() {
   }
   await unwatchCurrentFile();
   setContent("");
+  renderPreview("");
   state.set("filePath", null);
   state.set("fileName", "Untitled");
   state.set("isDirty", false);
@@ -110,7 +117,6 @@ async function saveFile() {
     if (!path) return;
   }
   try {
-    // Temporarily unwatch to avoid self-trigger
     await unwatchCurrentFile();
     const content = getContent();
     await invoke("write_file", { path, content });
@@ -176,7 +182,6 @@ function setupFileWatcherListener() {
       updateWordCount(content);
       isExternalChange = false;
 
-      // Show brief notification in status bar
       const statusEl = document.getElementById("status-file-info");
       const original = statusEl.textContent;
       statusEl.textContent = "File reloaded (changed externally)";
@@ -185,6 +190,16 @@ function setupFileWatcherListener() {
       }, 3000);
     } catch (err) {
       console.error("Failed to reload file:", err);
+    }
+  });
+}
+
+// Listen for file open events from the OS (file association, drag to dock icon, etc.)
+function setupOpenFileListener() {
+  listen("open-file", async (event) => {
+    const path = event.payload;
+    if (path) {
+      await loadFile(path);
     }
   });
 }
@@ -237,7 +252,6 @@ function setupResponsiveLayout() {
 
   function handleResize(e) {
     document.body.classList.toggle("mobile", e.matches);
-    // On small screens, default to editor-only instead of split
     if (e.matches && state.viewMode === "split") {
       setViewMode("editor");
     }
@@ -281,24 +295,7 @@ function hideWelcome() {
   document.getElementById("welcome-screen").classList.remove("visible");
 }
 
-// --- Event listeners ---
-
-function setupMenuListeners() {
-  listen("menu-action", (event) => {
-    switch (event.payload) {
-      case "new": newFile(); break;
-      case "open": openFile(); break;
-      case "save": saveFile(); break;
-      case "save_as": saveFileAs(); break;
-      case "toggle_preview":
-        const modes = ["split", "editor", "preview"];
-        const idx = modes.indexOf(state.viewMode);
-        setViewMode(modes[(idx + 1) % modes.length]);
-        break;
-      case "toggle_theme": toggleTheme(); break;
-    }
-  });
-}
+// --- Toolbar ---
 
 function setupToolbar() {
   document.getElementById("btn-new").addEventListener("click", newFile);
@@ -356,7 +353,7 @@ state.on("fileName", (name) => {
   document.getElementById("status-file-info").textContent = state.filePath || "";
 });
 
-// --- Keyboard shortcuts (supplemental to menu accelerators) ---
+// --- Keyboard shortcuts ---
 document.addEventListener("keydown", (e) => {
   const mod = e.metaKey || e.ctrlKey;
   if (mod && e.key === "s" && !e.shiftKey) {

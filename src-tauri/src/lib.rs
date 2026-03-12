@@ -1,5 +1,6 @@
+use tauri::Emitter;
+
 mod commands;
-mod menu;
 mod state;
 
 #[cfg(desktop)]
@@ -23,6 +24,7 @@ pub fn run() {
             commands::recent::get_recent_files,
             commands::recent::add_recent_file,
             commands::recent::clear_recent_files,
+            commands::file_ops::get_open_file_arg,
             #[cfg(desktop)]
             platform::desktop::watch_file,
             #[cfg(desktop)]
@@ -32,9 +34,24 @@ pub fn run() {
     builder = builder.setup(|app| {
         #[cfg(desktop)]
         {
-            menu::setup_menu(app)?;
             platform::desktop::setup_file_watcher(app)?;
         }
+
+        // Check if a file was passed as a CLI argument (file association / "Open With")
+        let args: Vec<String> = std::env::args().collect();
+        if let Some(file_path) = args.get(1) {
+            let path = std::path::Path::new(file_path);
+            if path.exists() && !file_path.starts_with('-') {
+                let file_path = file_path.clone();
+                let handle = app.handle().clone();
+                // Emit after frontend is ready (small delay)
+                std::thread::spawn(move || {
+                    std::thread::sleep(std::time::Duration::from_millis(500));
+                    let _ = handle.emit("open-file", file_path);
+                });
+            }
+        }
+
         Ok(())
     });
 
