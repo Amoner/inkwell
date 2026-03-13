@@ -1,5 +1,5 @@
 import { EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection, dropCursor } from "@codemirror/view";
-import { EditorState } from "@codemirror/state";
+import { EditorState, Compartment } from "@codemirror/state";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
@@ -12,6 +12,7 @@ import { state } from "../state/app-state.js";
 
 let view = null;
 let changeCallbacks = [];
+const themeCompartment = new Compartment();
 
 export function createEditor(parent) {
   const extensions = [
@@ -34,7 +35,7 @@ export function createEditor(parent) {
       }
     }),
     EditorView.lineWrapping,
-    getThemeExtension(),
+    themeCompartment.of(getThemeExtension()),
   ];
 
   view = new EditorView({
@@ -45,25 +46,16 @@ export function createEditor(parent) {
     parent,
   });
 
-  // Update theme when it changes
   state.on("theme", () => {
-    // Recreate editor with new theme
-    const content = getContent();
-    const parent = view.dom.parentElement;
-    view.destroy();
-    view = null;
-    changeCallbacks_saved = [...changeCallbacks];
-    changeCallbacks = [];
-    const newView = createEditor(parent);
-    setContent(content);
-    changeCallbacks = changeCallbacks_saved;
-    return newView;
+    if (view) {
+      view.dispatch({
+        effects: themeCompartment.reconfigure(getThemeExtension()),
+      });
+    }
   });
 
   return view;
 }
-
-let changeCallbacks_saved = [];
 
 function getThemeExtension() {
   let theme = state.theme;

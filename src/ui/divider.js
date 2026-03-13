@@ -23,22 +23,29 @@ export function setupDivider() {
     document.addEventListener("touchend", stopDrag);
   }
 
+  let rafId = null;
+
   function onDrag(e) {
     if (!isDragging) return;
     e.preventDefault();
 
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const rect = mainContent.getBoundingClientRect();
-    const offset = clientX - rect.left;
-    const total = rect.width;
 
-    // Clamp between 20% and 80%
-    const ratio = Math.max(0.2, Math.min(0.8, offset / total));
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      const rect = mainContent.getBoundingClientRect();
+      const offset = clientX - rect.left;
+      const total = rect.width;
 
-    editorPane.style.flex = "none";
-    previewPane.style.flex = "none";
-    editorPane.style.width = `${ratio * 100}%`;
-    previewPane.style.width = `${(1 - ratio) * 100}%`;
+      // Clamp between 20% and 80%
+      const ratio = Math.max(0.2, Math.min(0.8, offset / total));
+
+      editorPane.style.flex = "none";
+      previewPane.style.flex = "none";
+      editorPane.style.width = `${ratio * 100}%`;
+      previewPane.style.width = `${(1 - ratio) * 100}%`;
+    });
   }
 
   function stopDrag() {

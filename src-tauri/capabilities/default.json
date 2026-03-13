@@ -17,7 +17,6 @@
     "fs:allow-write-text-file",
     "fs:allow-exists",
     "fs:allow-stat",
-    "store:default",
-    "shell:allow-open"
+    "store:default"
   ]
 }

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { listen } from "@tauri-apps/api/event";
 import { createEditor, getContent, setContent, onContentChange, getCursorPosition, getEditorView } from "./editor/editor.js";
 import { initPreview, renderPreview } from "./preview/preview.js";
 import { setupScrollSync } from "./preview/scroll-sync.js";
@@ -26,9 +26,12 @@ async function init() {
       if (!state.isDirty && !isExternalChange) {
         state.set("isDirty", true);
       }
+      const pos = getCursorPosition();
+      document.getElementById("status-cursor").textContent = `Ln ${pos.line}, Col ${pos.col}`;
     }, 150)
   );
 
+  // Cursor position on every change (including non-debounced)
   onContentChange(() => {
     const pos = getCursorPosition();
     document.getElementById("status-cursor").textContent = `Ln ${pos.line}, Col ${pos.col}`;
@@ -40,7 +43,6 @@ async function init() {
   setupDivider();
   setupResponsiveLayout();
   setupFileWatcherListener();
-  setupOpenFileListener();
 
   // Scroll sync
   const view = getEditorView();
@@ -110,6 +112,20 @@ async function loadFile(path) {
   }
 }
 
+async function saveToPath(path) {
+  await unwatchCurrentFile();
+  const content = getContent();
+  await invoke("write_file", { path, content });
+
+  const name = path.split(/[/\\]/).pop();
+  state.set("filePath", path);
+  state.set("fileName", name);
+  state.set("isDirty", false);
+
+  await invoke("add_recent_file", { path });
+  await watchCurrentFile(path);
+}
+
 async function saveFile() {
   let path = state.filePath;
   if (!path) {
@@ -117,17 +133,7 @@ async function saveFile() {
     if (!path) return;
   }
   try {
-    await unwatchCurrentFile();
-    const content = getContent();
-    await invoke("write_file", { path, content });
-
-    const name = path.split(/[/\\]/).pop();
-    state.set("filePath", path);
-    state.set("fileName", name);
-    state.set("isDirty", false);
-
-    await invoke("add_recent_file", { path });
-    await watchCurrentFile(path);
+    await saveToPath(path);
   } catch (err) {
     console.error("Failed to save file:", err);
   }
@@ -137,17 +143,7 @@ async function saveFileAs() {
   const path = await invoke("pick_save_file");
   if (!path) return;
   try {
-    await unwatchCurrentFile();
-    const content = getContent();
-    await invoke("write_file", { path, content });
-
-    const name = path.split(/[/\\]/).pop();
-    state.set("filePath", path);
-    state.set("fileName", name);
-    state.set("isDirty", false);
-
-    await invoke("add_recent_file", { path });
-    await watchCurrentFile(path);
+    await saveToPath(path);
   } catch (err) {
     console.error("Failed to save file:", err);
   }
@@ -190,16 +186,6 @@ function setupFileWatcherListener() {
       }, 3000);
     } catch (err) {
       console.error("Failed to reload file:", err);
-    }
-  });
-}
-
-// Listen for file open events from the OS (file association, drag to dock icon, etc.)
-function setupOpenFileListener() {
-  listen("open-file", async (event) => {
-    const path = event.payload;
-    if (path) {
-      await loadFile(path);
     }
   });
 }

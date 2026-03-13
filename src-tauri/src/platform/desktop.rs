@@ -64,7 +64,7 @@ pub async fn watch_file(app: tauri::AppHandle, path: String) -> Result<(), Strin
     // Spawn a thread to debounce and emit events
     std::thread::spawn(move || {
         loop {
-            match rx.recv_timeout(Duration::from_secs(60)) {
+            match rx.recv_timeout(Duration::from_secs(2)) {
                 Ok(()) => {
                     // Debounce: drain any queued events within 500ms
                     std::thread::sleep(Duration::from_millis(500));

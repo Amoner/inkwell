@@ -1,7 +1,4 @@
-use tauri::Emitter;
-
 mod commands;
-mod state;
 
 #[cfg(desktop)]
 mod platform;
@@ -12,8 +9,6 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .plugin(tauri_plugin_shell::init())
-        .manage(state::AppState::default())
         .invoke_handler(tauri::generate_handler![
             commands::file_ops::read_file,
             commands::file_ops::write_file,
@@ -37,21 +32,6 @@ pub fn run() {
             platform::desktop::setup_file_watcher(app)?;
         }
 
-        // Check if a file was passed as a CLI argument (file association / "Open With")
-        let args: Vec<String> = std::env::args().collect();
-        if let Some(file_path) = args.get(1) {
-            let path = std::path::Path::new(file_path);
-            if path.exists() && !file_path.starts_with('-') {
-                let file_path = file_path.clone();
-                let handle = app.handle().clone();
-                // Emit after frontend is ready (small delay)
-                std::thread::spawn(move || {
-                    std::thread::sleep(std::time::Duration::from_millis(500));
-                    let _ = handle.emit("open-file", file_path);
-                });
-            }
-        }
-
         Ok(())
     });
 
@@ -59,12 +39,6 @@ pub fn run() {
     {
         builder = builder.plugin(tauri_plugin_window_state::Builder::default().build());
     }
-
-    builder = builder.on_window_event(|_window, event| {
-        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-            let _ = api;
-        }
-    });
 
     builder
         .run(tauri::generate_context!())

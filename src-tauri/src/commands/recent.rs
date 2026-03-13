@@ -47,6 +47,7 @@ pub async fn add_recent_file(app: tauri::AppHandle, path: String) -> Result<(), 
         STORE_KEY,
         serde_json::to_value(&files).map_err(|e| e.to_string())?,
     );
+    store.save().map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -58,5 +59,6 @@ pub async fn clear_recent_files(app: tauri::AppHandle) -> Result<(), String> {
         STORE_KEY,
         serde_json::to_value::<Vec<RecentFile>>(vec![]).map_err(|e| e.to_string())?,
     );
+    store.save().map_err(|e| e.to_string())?;
     Ok(())
 }
