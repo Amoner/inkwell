@@ -8,6 +8,10 @@ Inkwell is a lightweight, cross-platform Markdown editor built for people who ju
 ![Release](https://img.shields.io/github/v/release/Amoner/inkwell)
 ![Build](https://img.shields.io/github/actions/workflow/status/Amoner/inkwell/build.yml)
 
+<p align="center">
+  <img src="assets/split-view.gif" alt="Split view editing with live preview" width="720">
+</p>
+
 ## Download
 
 | Platform | Download |
@@ -36,6 +40,15 @@ Every popular Markdown editor today is either too heavy, too expensive, or too c
 Inkwell is built with [Tauri](https://tauri.app), which uses your system's native WebView instead of bundling an entire Chromium browser. This is why it's **30x smaller** than Electron-based alternatives while still feeling snappy.
 
 ## Features
+
+### Welcome screen
+<img src="assets/welcome.gif" alt="Welcome screen" width="600">
+
+### Live editing with syntax highlighting
+<img src="assets/typing.gif" alt="Live editing" width="600">
+
+### Split editor + rendered preview
+<img src="assets/editing.gif" alt="Split view editing" width="600">
 
 - **Split editor + preview** — Write Markdown on the left, see rendered output on the right. Scroll sync keeps both panes aligned.
 - **Syntax highlighting** — Powered by CodeMirror 6 with full Markdown grammar support.
