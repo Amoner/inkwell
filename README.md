@@ -44,9 +44,6 @@ Inkwell is built with [Tauri](https://tauri.app), which uses your system's nativ
 ### Welcome screen
 <img src="assets/welcome.gif" alt="Welcome screen" width="600">
 
-### Live editing with syntax highlighting
-<img src="assets/typing.gif" alt="Live editing" width="600">
-
 ### Split editor + rendered preview
 <img src="assets/editing.gif" alt="Split view editing" width="600">
 
