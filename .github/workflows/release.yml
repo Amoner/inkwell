@@ -53,6 +53,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Write Apple API key to file
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p "$RUNNER_TEMP/apple-keys"
+          echo "${{ secrets.APPLE_API_KEY }}" > "$RUNNER_TEMP/apple-keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8"
+
       - name: Build and release
         id: tauri
         uses: tauri-apps/tauri-action@v0
@@ -63,6 +69,7 @@ jobs:
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           # macOS notarization (App Store Connect API key)
+          APPLE_API_KEY_PATH: ${{ runner.os == 'macOS' && format('{0}/apple-keys/AuthKey_{1}.p8', runner.temp, secrets.APPLE_API_KEY_ID) || '' }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
