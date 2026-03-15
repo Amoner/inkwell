@@ -7,6 +7,7 @@
 .cm-editor .cm-scroller {
   font-family: var(--font-mono);
   padding: 0;
+  overflow: auto;
 }
 
 .cm-editor.cm-focused {

@@ -35,9 +35,6 @@ export const inkwellLight = EditorView.theme(
     ".cm-lineNumbers .cm-gutterElement": {
       padding: "0 8px 0 16px",
     },
-    ".cm-scroller": {
-      overflow: "auto",
-    },
   },
   { dark: false }
 );

@@ -76,6 +76,10 @@
   height: 100%;
 }
 
+#editor-pane .cm-editor .cm-scroller {
+  height: 100%;
+}
+
 #divider {
   width: 5px;
   background: var(--border);
