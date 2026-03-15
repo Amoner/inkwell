@@ -68,9 +68,11 @@ jobs:
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          # macOS notarization (App Store Connect API key written to file)
+          # macOS notarization (App Store Connect API key)
+          # APPLE_API_KEY is the key ID (not content) — Tauri passes it to notarytool --key-id
+          # APPLE_API_KEY_PATH is the path to the .p8 file written in the previous step
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_KEY_PATH: ${{ runner.os == 'macOS' && format('{0}/apple-keys/AuthKey_{1}.p8', runner.temp, secrets.APPLE_API_KEY_ID) || '' }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
         with:
           tagName: ${{ github.ref_name }}
