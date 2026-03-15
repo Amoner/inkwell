@@ -50,6 +50,7 @@ jobs:
       - run: npm ci
 
       - name: Build and release
+        id: tauri
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,3 +69,49 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: --target ${{ matrix.target }}
+
+      - name: Rename release assets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          LABEL="${{ matrix.label }}"
+
+          # Get all release assets for this release
+          ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name' 2>/dev/null || true)
+
+          for ASSET_NAME in $ASSETS; do
+            # Only rename assets that match default Tauri naming (contain underscores with version)
+            case "$ASSET_NAME" in
+              Inkwell_*|inkwell_*|inkwell-*)
+                # Determine extension and build new name
+                case "$ASSET_NAME" in
+                  *.dmg)         NEW_NAME="Inkwell-${TAG}-${LABEL}.dmg" ;;
+                  *.app.tar.gz)  NEW_NAME="Inkwell-${TAG}-${LABEL}.app.tar.gz" ;;
+                  *.app.tar.gz.sig) NEW_NAME="Inkwell-${TAG}-${LABEL}.app.tar.gz.sig" ;;
+                  *-setup.exe)   NEW_NAME="Inkwell-${TAG}-${LABEL}-Setup.exe" ;;
+                  *.nsis.zip)    NEW_NAME="Inkwell-${TAG}-${LABEL}-Setup.nsis.zip" ;;
+                  *.nsis.zip.sig) NEW_NAME="Inkwell-${TAG}-${LABEL}-Setup.nsis.zip.sig" ;;
+                  *.msi)         NEW_NAME="Inkwell-${TAG}-${LABEL}.msi" ;;
+                  *.msi.zip)     NEW_NAME="Inkwell-${TAG}-${LABEL}.msi.zip" ;;
+                  *.msi.zip.sig) NEW_NAME="Inkwell-${TAG}-${LABEL}.msi.zip.sig" ;;
+                  *.deb)         NEW_NAME="Inkwell-${TAG}-${LABEL}.deb" ;;
+                  *.rpm)         NEW_NAME="Inkwell-${TAG}-${LABEL}.rpm" ;;
+                  *.AppImage)    NEW_NAME="Inkwell-${TAG}-${LABEL}.AppImage" ;;
+                  *.AppImage.tar.gz) NEW_NAME="Inkwell-${TAG}-${LABEL}.AppImage.tar.gz" ;;
+                  *.AppImage.tar.gz.sig) NEW_NAME="Inkwell-${TAG}-${LABEL}.AppImage.tar.gz.sig" ;;
+                  *) continue ;;
+                esac
+
+                if [ "$ASSET_NAME" != "$NEW_NAME" ]; then
+                  # Download, delete old, upload with new name
+                  gh release download "$TAG" --pattern "$ASSET_NAME" --dir /tmp/assets --clobber
+                  gh release delete-asset "$TAG" "$ASSET_NAME" --yes
+                  mv "/tmp/assets/$ASSET_NAME" "/tmp/assets/$NEW_NAME"
+                  gh release upload "$TAG" "/tmp/assets/$NEW_NAME"
+                  echo "Renamed: $ASSET_NAME → $NEW_NAME"
+                fi
+                ;;
+            esac
+          done

@@ -1,9 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
+import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
 import { createEditor, getContent, setContent, onContentChange, getCursorPosition, getEditorView } from "./editor/editor.js";
 import { initPreview, renderPreview } from "./preview/preview.js";
-import { setupScrollSync } from "./preview/scroll-sync.js";
+import { setupScrollSync, getScrollRatio, applyScrollRatio } from "./preview/scroll-sync.js";
 import { setupDivider, resetDivider } from "./ui/divider.js";
 import { state } from "./state/app-state.js";
 import { loadSettings, saveTheme } from "./state/settings.js";
@@ -49,6 +50,12 @@ async function init() {
   if (view) {
     setupScrollSync(view, document.getElementById("preview-pane"));
   }
+
+  // Display app version in status bar
+  try {
+    const version = await getVersion();
+    document.getElementById("status-version").textContent = `v${version}`;
+  } catch {}
 
   // Check if app was launched with a file argument (file association / "Open With")
   const fileArg = await invoke("get_open_file_arg");
@@ -210,6 +217,10 @@ function toggleTheme() {
 }
 
 function setViewMode(mode) {
+  // Capture scroll position from the current mode before switching
+  const prevMode = state.viewMode;
+  const ratio = getScrollRatio(prevMode);
+
   state.set("viewMode", mode);
   const main = document.getElementById("main-content");
   main.className = `view-${mode}`;
@@ -224,6 +235,11 @@ function setViewMode(mode) {
   if (mode === "preview" || mode === "split") {
     renderPreview(getContent());
   }
+
+  // Restore scroll position in the new mode after layout settles
+  requestAnimationFrame(() => {
+    applyScrollRatio(ratio, mode);
+  });
 }
 
 function updateWordCount(content) {

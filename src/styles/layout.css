@@ -137,7 +137,8 @@
 }
 
 #status-cursor,
-#status-word-count {
+#status-word-count,
+#status-version {
   margin-left: 16px;
   white-space: nowrap;
 }
