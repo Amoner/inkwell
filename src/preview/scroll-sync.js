@@ -2,6 +2,12 @@
 let editorScroller = null;
 let previewEl = null;
 let syncSource = null;
+let syncResetTimer = null;
+
+function deferSyncReset() {
+  clearTimeout(syncResetTimer);
+  syncResetTimer = setTimeout(() => { syncSource = null; }, 200);
+}
 
 export function setupScrollSync(editorView, previewElement) {
   editorScroller = editorView.scrollDOM;
@@ -17,7 +23,7 @@ export function setupScrollSync(editorView, previewElement) {
       const previewMax = previewEl.scrollHeight - previewEl.clientHeight;
       previewEl.scrollTop = ratio * previewMax;
     }
-    requestAnimationFrame(() => { syncSource = null; });
+    deferSyncReset();
   });
 
   // Preview -> Editor
@@ -30,7 +36,7 @@ export function setupScrollSync(editorView, previewElement) {
       const editorMax = editorScroller.scrollHeight - editorScroller.clientHeight;
       editorScroller.scrollTop = ratio * editorMax;
     }
-    requestAnimationFrame(() => { syncSource = null; });
+    deferSyncReset();
   });
 }
 
@@ -52,7 +58,9 @@ export function getScrollRatio(activeMode) {
   return 0;
 }
 
-// Apply a scroll ratio to the target pane(s), suppressing sync feedback
+// Apply a scroll ratio to the target pane(s), suppressing sync feedback.
+// Uses a single requestAnimationFrame guard (not the 200ms debounce) since
+// this is a one-shot restore that shouldn't block user scroll input.
 export function applyScrollRatio(ratio, targetMode) {
   syncSource = "restore";
 

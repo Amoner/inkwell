@@ -57,10 +57,21 @@ async function init() {
     document.getElementById("status-version").textContent = `v${version}`;
   } catch {}
 
-  // Check if app was launched with a file argument (file association / "Open With")
+  // Handle macOS file-open events for when the app is already running
+  // (registered early so no events are missed during the checks below)
+  await listen("open-file-requested", async (event) => {
+    await loadFile(event.payload);
+  });
+
+  // Check if app was launched with a file argument
+  // 1. CLI argv (Linux/Windows file associations)
+  // 2. macOS Apple Events buffered in AppState (RunEvent::Opened fires before webview is ready)
   const fileArg = await invoke("get_open_file_arg");
-  if (fileArg) {
-    await loadFile(fileArg);
+  const pendingFile = !fileArg ? await invoke("get_pending_open_file") : null;
+  const openPath = fileArg || pendingFile;
+
+  if (openPath) {
+    await loadFile(openPath);
   } else {
     await showWelcome();
   }
