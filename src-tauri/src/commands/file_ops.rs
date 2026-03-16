@@ -1,5 +1,7 @@
 use std::fs;
 
+use crate::PendingOpenFiles;
+
 #[tauri::command]
 pub async fn read_file(path: String) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|e| format!("Failed to read file: {}", e))
@@ -18,6 +20,7 @@ pub async fn get_file_size(path: String) -> Result<u64, String> {
 }
 
 /// Returns the file path passed as a CLI argument (for file associations), if any.
+/// Works on Linux/Windows where the OS passes the file path via argv.
 #[tauri::command]
 pub async fn get_open_file_arg() -> Option<String> {
     let args: Vec<String> = std::env::args().collect();
@@ -29,4 +32,14 @@ pub async fn get_open_file_arg() -> Option<String> {
             None
         }
     })
+}
+
+/// Returns and drains any file paths received via macOS Apple Events (RunEvent::Opened)
+/// before the frontend was ready. Called by the frontend on init to handle cold-launch opens.
+#[tauri::command]
+pub async fn get_pending_open_file(state: tauri::State<'_, PendingOpenFiles>) -> Result<Option<String>, String> {
+    let mut pending = state.0.lock().unwrap();
+    let first = pending.first().cloned();
+    pending.clear();
+    Ok(first)
 }

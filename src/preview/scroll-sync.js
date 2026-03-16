@@ -58,7 +58,9 @@ export function getScrollRatio(activeMode) {
   return 0;
 }
 
-// Apply a scroll ratio to the target pane(s), suppressing sync feedback
+// Apply a scroll ratio to the target pane(s), suppressing sync feedback.
+// Uses a single requestAnimationFrame guard (not the 200ms debounce) since
+// this is a one-shot restore that shouldn't block user scroll input.
 export function applyScrollRatio(ratio, targetMode) {
   syncSource = "restore";
 
@@ -71,5 +73,5 @@ export function applyScrollRatio(ratio, targetMode) {
     previewEl.scrollTop = ratio * max;
   }
 
-  deferSyncReset();
+  requestAnimationFrame(() => { syncSource = null; });
 }
