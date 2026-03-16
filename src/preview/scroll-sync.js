@@ -2,6 +2,12 @@
 let editorScroller = null;
 let previewEl = null;
 let syncSource = null;
+let syncResetTimer = null;
+
+function deferSyncReset() {
+  clearTimeout(syncResetTimer);
+  syncResetTimer = setTimeout(() => { syncSource = null; }, 200);
+}
 
 export function setupScrollSync(editorView, previewElement) {
   editorScroller = editorView.scrollDOM;
@@ -17,7 +23,7 @@ export function setupScrollSync(editorView, previewElement) {
       const previewMax = previewEl.scrollHeight - previewEl.clientHeight;
       previewEl.scrollTop = ratio * previewMax;
     }
-    requestAnimationFrame(() => { syncSource = null; });
+    deferSyncReset();
   });
 
   // Preview -> Editor
@@ -30,7 +36,7 @@ export function setupScrollSync(editorView, previewElement) {
       const editorMax = editorScroller.scrollHeight - editorScroller.clientHeight;
       editorScroller.scrollTop = ratio * editorMax;
     }
-    requestAnimationFrame(() => { syncSource = null; });
+    deferSyncReset();
   });
 }
 
@@ -65,5 +71,5 @@ export function applyScrollRatio(ratio, targetMode) {
     previewEl.scrollTop = ratio * max;
   }
 
-  requestAnimationFrame(() => { syncSource = null; });
+  deferSyncReset();
 }

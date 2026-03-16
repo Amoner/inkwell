@@ -64,6 +64,11 @@ async function init() {
   } else {
     await showWelcome();
   }
+
+  // Handle macOS file-open events (double-click / "Open With" file associations)
+  await listen("open-file-requested", async (event) => {
+    await loadFile(event.payload);
+  });
 }
 
 // --- File operations ---

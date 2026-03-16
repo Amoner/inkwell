@@ -3,6 +3,8 @@ mod commands;
 #[cfg(desktop)]
 mod platform;
 
+use tauri::Emitter;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default()
@@ -41,6 +43,17 @@ pub fn run() {
     }
 
     builder
-        .run(tauri::generate_context!())
-        .expect("error running Inkwell");
+        .build(tauri::generate_context!())
+        .expect("error building Inkwell")
+        .run(|app_handle, event| {
+            if let tauri::RunEvent::Opened { urls } = event {
+                for url in urls {
+                    if let Ok(path) = url.to_file_path() {
+                        if let Some(path_str) = path.to_str() {
+                            let _ = app_handle.emit("open-file-requested", path_str.to_string());
+                        }
+                    }
+                }
+            }
+        });
 }
