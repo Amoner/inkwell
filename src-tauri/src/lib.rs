@@ -52,8 +52,9 @@ pub fn run() {
     builder
         .build(tauri::generate_context!())
         .expect("error building Inkwell")
-        .run(|app_handle, event| {
-            if let tauri::RunEvent::Opened { urls } = event {
+        .run(|_app_handle, _event| {
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Opened { urls } = &_event {
                 let paths: Vec<String> = urls
                     .iter()
                     .filter_map(|url| url.to_file_path().ok())
@@ -66,11 +67,11 @@ pub fn run() {
 
                 // Try to emit to frontend (works when app is already running).
                 // Also store in state for cold-launch (frontend polls on init).
-                let state = app_handle.state::<PendingOpenFiles>();
+                let state = _app_handle.state::<PendingOpenFiles>();
                 let mut pending = state.0.lock().unwrap();
                 for path in &paths {
                     pending.push(path.clone());
-                    let _ = app_handle.emit("open-file-requested", path.clone());
+                    let _ = _app_handle.emit("open-file-requested", path.clone());
                 }
             }
         });
