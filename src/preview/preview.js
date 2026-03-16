@@ -37,6 +37,28 @@ md.core.ruler.after("inline", "task-lists", (state) => {
   }
 });
 
+// Inject data-source-line attributes on block-level tokens for scroll sync
+const blockTokens = [
+  "paragraph_open", "heading_open", "fence", "code_block",
+  "blockquote_open", "bullet_list_open", "ordered_list_open",
+  "table_open", "hr",
+];
+
+for (const tokenType of blockTokens) {
+  const defaultRender = md.renderer.rules[tokenType] ||
+    function (tokens, idx, options, env, self) {
+      return self.renderToken(tokens, idx, options);
+    };
+
+  md.renderer.rules[tokenType] = function (tokens, idx, options, env, self) {
+    const token = tokens[idx];
+    if (token.map && token.map.length) {
+      token.attrSet("data-source-line", String(token.map[0]));
+    }
+    return defaultRender(tokens, idx, options, env, self);
+  };
+}
+
 export function initPreview(element) {
   previewElement = element;
 }
@@ -46,7 +68,7 @@ export function renderPreview(content) {
   const html = md.render(content);
   previewElement.innerHTML = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
-    ADD_ATTR: ["disabled", "checked"],
+    ADD_ATTR: ["disabled", "checked", "data-source-line"],
     ADD_TAGS: ["input"],
   });
 }

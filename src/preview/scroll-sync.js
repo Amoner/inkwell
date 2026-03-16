@@ -1,4 +1,4 @@
-// Bidirectional proportional scroll sync between editor and preview
+// Bidirectional proportional scroll sync + cursor-based snap
 let editorScroller = null;
 let previewEl = null;
 let syncSource = null;
@@ -13,9 +13,9 @@ export function setupScrollSync(editorView, previewElement) {
   editorScroller = editorView.scrollDOM;
   previewEl = previewElement;
 
-  // Editor -> Preview
+  // Editor -> Preview (proportional)
   editorScroller.addEventListener("scroll", () => {
-    if (syncSource === "preview" || syncSource === "restore") return;
+    if (syncSource === "preview" || syncSource === "cursor" || syncSource === "restore") return;
     syncSource = "editor";
     const max = editorScroller.scrollHeight - editorScroller.clientHeight;
     if (max > 0) {
@@ -26,9 +26,9 @@ export function setupScrollSync(editorView, previewElement) {
     deferSyncReset();
   });
 
-  // Preview -> Editor
+  // Preview -> Editor (proportional)
   previewEl.addEventListener("scroll", () => {
-    if (syncSource === "editor" || syncSource === "restore") return;
+    if (syncSource === "editor" || syncSource === "cursor" || syncSource === "restore") return;
     syncSource = "preview";
     const max = previewEl.scrollHeight - previewEl.clientHeight;
     if (max > 0) {
@@ -38,6 +38,42 @@ export function setupScrollSync(editorView, previewElement) {
     }
     deferSyncReset();
   });
+}
+
+// Scroll the preview so the element matching `sourceLine` is visible.
+// `sourceLine` is 1-indexed (from CM6); data-source-line is 0-indexed (from markdown-it).
+export function syncPreviewToLine(sourceLine) {
+  if (!previewEl) return;
+
+  const targetLine = sourceLine - 1; // convert to 0-indexed
+  const elements = previewEl.querySelectorAll("[data-source-line]");
+  if (elements.length === 0) return;
+
+  // Find the element with highest data-source-line <= targetLine
+  let best = null;
+  for (const el of elements) {
+    const line = parseInt(el.getAttribute("data-source-line"), 10);
+    if (line <= targetLine) {
+      best = el;
+    } else {
+      break; // elements are in document order (ascending line numbers)
+    }
+  }
+
+  if (!best) best = elements[0];
+
+  // Suppress proportional sync while cursor-snap scrolls
+  syncSource = "cursor";
+
+  // Scroll so the element sits ~15% from the top of the preview pane
+  const paneRect = previewEl.getBoundingClientRect();
+  const elRect = best.getBoundingClientRect();
+  const offset = elRect.top - paneRect.top + previewEl.scrollTop;
+  const targetScroll = offset - paneRect.height * 0.15;
+
+  previewEl.scrollTo({ top: Math.max(0, targetScroll), behavior: "instant" });
+
+  deferSyncReset();
 }
 
 // Get the current scroll ratio from whichever pane is visible
@@ -59,8 +95,6 @@ export function getScrollRatio(activeMode) {
 }
 
 // Apply a scroll ratio to the target pane(s), suppressing sync feedback.
-// Uses a single requestAnimationFrame guard (not the 200ms debounce) since
-// this is a one-shot restore that shouldn't block user scroll input.
 export function applyScrollRatio(ratio, targetMode) {
   syncSource = "restore";
 

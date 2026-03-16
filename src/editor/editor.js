@@ -12,6 +12,8 @@ import { state } from "../state/app-state.js";
 
 let view = null;
 let changeCallbacks = [];
+let cursorLineCallbacks = [];
+let lastCursorLine = 1;
 const themeCompartment = new Compartment();
 
 export function createEditor(parent) {
@@ -32,6 +34,14 @@ export function createEditor(parent) {
       if (update.docChanged) {
         const content = update.state.doc.toString();
         changeCallbacks.forEach((cb) => cb(content));
+      }
+      if (update.selectionSet || update.docChanged) {
+        const pos = update.state.selection.main.head;
+        const line = update.state.doc.lineAt(pos).number;
+        if (line !== lastCursorLine) {
+          lastCursorLine = line;
+          cursorLineCallbacks.forEach((cb) => cb(line));
+        }
       }
     }),
     EditorView.lineWrapping,
@@ -86,6 +96,10 @@ export function getCursorPosition() {
   const pos = view.state.selection.main.head;
   const line = view.state.doc.lineAt(pos);
   return { line: line.number, col: pos - line.from + 1 };
+}
+
+export function onCursorLineChange(callback) {
+  cursorLineCallbacks.push(callback);
 }
 
 export function getEditorView() {

@@ -2,9 +2,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
-import { createEditor, getContent, setContent, onContentChange, getCursorPosition, getEditorView } from "./editor/editor.js";
+import { createEditor, getContent, setContent, onContentChange, getCursorPosition, getEditorView, onCursorLineChange } from "./editor/editor.js";
 import { initPreview, renderPreview } from "./preview/preview.js";
-import { setupScrollSync, getScrollRatio, applyScrollRatio } from "./preview/scroll-sync.js";
+import { setupScrollSync, syncPreviewToLine, getScrollRatio, applyScrollRatio } from "./preview/scroll-sync.js";
 import { setupDivider, resetDivider } from "./ui/divider.js";
 import { state } from "./state/app-state.js";
 import { loadSettings, saveTheme } from "./state/settings.js";
@@ -50,6 +50,13 @@ async function init() {
   if (view) {
     setupScrollSync(view, document.getElementById("preview-pane"));
   }
+
+  // Cursor-based preview scroll sync
+  onCursorLineChange((line) => {
+    if (state.viewMode === "split") {
+      syncPreviewToLine(line);
+    }
+  });
 
   // Display app version in status bar
   try {
