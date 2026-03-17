@@ -8,6 +8,7 @@
   font-family: var(--font-mono);
   padding: 0;
   overflow: auto;
+  scroll-behavior: smooth;
 }
 
 .cm-editor.cm-focused {
@@ -16,4 +17,13 @@
 
 .cm-editor .cm-line {
   padding: 0 16px;
+}
+
+@keyframes click-nav-flash {
+  0%   { background-color: color-mix(in srgb, var(--accent) 15%, transparent); }
+  100% { background-color: transparent; }
+}
+
+.cm-editor.click-nav-active .cm-activeLine {
+  animation: click-nav-flash 1.4s ease-out;
 }

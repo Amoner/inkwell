@@ -2,9 +2,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
-import { createEditor, getContent, setContent, onContentChange, getCursorPosition, getEditorView, onCursorLineChange } from "./editor/editor.js";
+import { createEditor, getContent, setContent, onContentChange, getCursorPosition, getEditorView, onCursorLineChange, setCursorToLine, replaceLines } from "./editor/editor.js";
 import { initPreview, renderPreview } from "./preview/preview.js";
-import { setupScrollSync, syncPreviewToLine, getScrollRatio, applyScrollRatio } from "./preview/scroll-sync.js";
+import { setupScrollSync, syncPreviewToLine, getScrollRatio, applyScrollRatio, setupPreviewClickNav } from "./preview/scroll-sync.js";
+import { setupInlineEdit, cancelActiveEdit } from "./preview/inline-edit.js";
 import { setupDivider, resetDivider } from "./ui/divider.js";
 import { state } from "./state/app-state.js";
 import { loadSettings, saveTheme } from "./state/settings.js";
@@ -47,8 +48,11 @@ async function init() {
 
   // Scroll sync
   const view = getEditorView();
+  const previewPane = document.getElementById("preview-pane");
   if (view) {
-    setupScrollSync(view, document.getElementById("preview-pane"));
+    setupScrollSync(view, previewPane);
+    setupPreviewClickNav(previewPane, setCursorToLine, () => state.viewMode !== "preview");
+    setupInlineEdit(previewPane, getContent, replaceLines, renderPreview);
   }
 
   // Cursor-based preview scroll sync
@@ -198,6 +202,7 @@ function setupFileWatcherListener() {
     try {
       const content = await invoke("read_file", { path: state.filePath });
       isExternalChange = true;
+      cancelActiveEdit();
       setContent(content);
       renderPreview(content);
       updateWordCount(content);
@@ -235,6 +240,9 @@ function toggleTheme() {
 }
 
 function setViewMode(mode) {
+  // Cancel any active inline edit before switching modes
+  cancelActiveEdit();
+
   // Capture scroll position from the current mode before switching
   const prevMode = state.viewMode;
   const ratio = getScrollRatio(prevMode);

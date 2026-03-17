@@ -105,3 +105,38 @@ export function onCursorLineChange(callback) {
 export function getEditorView() {
   return view;
 }
+
+export function replaceLines(startLine0, endLine0, newText) {
+  if (!view) return;
+  const doc = view.state.doc;
+  const lineCount = doc.lines;
+  const from = doc.line(Math.max(1, Math.min(startLine0 + 1, lineCount))).from;
+  const toLine = doc.line(Math.max(1, Math.min(endLine0 + 1, lineCount)));
+  const to = toLine.to;
+  view.dispatch({ changes: { from, to, insert: newText } });
+}
+
+export function setCursorToLine(lineNumber) {
+  if (!view) return;
+  const lineCount = view.state.doc.lines;
+  const clamped = Math.max(1, Math.min(lineNumber, lineCount));
+  const line = view.state.doc.line(clamped);
+  view.dispatch({
+    selection: { anchor: line.from },
+    effects: EditorView.scrollIntoView(line.from, { y: "center" }),
+  });
+  view.focus();
+
+  // Flash the active line to show where the cursor landed
+  const dom = view.dom;
+  dom.classList.remove("click-nav-active");
+  // Force reflow so re-adding the class restarts the animation
+  void dom.offsetWidth;
+  dom.classList.add("click-nav-active");
+  const onEnd = () => {
+    dom.classList.remove("click-nav-active");
+    dom.removeEventListener("animationend", onEnd);
+  };
+  dom.addEventListener("animationend", onEnd);
+  setTimeout(() => dom.classList.remove("click-nav-active"), 1500);
+}

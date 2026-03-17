@@ -109,3 +109,30 @@ export function applyScrollRatio(ratio, targetMode) {
 
   requestAnimationFrame(() => { syncSource = null; });
 }
+
+export function setupPreviewClickNav(previewElement, setCursorFn, isClickNavActive) {
+  previewElement.addEventListener("click", (e) => {
+    if (isClickNavActive && !isClickNavActive()) return;
+    let el = e.target;
+    while (el && el !== previewElement) {
+      if (el.hasAttribute("data-source-line")) {
+        const line = parseInt(el.getAttribute("data-source-line"), 10);
+
+        // Flash the clicked preview element
+        el.classList.remove("click-nav-highlight");
+        void el.offsetWidth;
+        el.classList.add("click-nav-highlight");
+        const onEnd = () => {
+          el.classList.remove("click-nav-highlight");
+          el.removeEventListener("animationend", onEnd);
+        };
+        el.addEventListener("animationend", onEnd);
+        setTimeout(() => el.classList.remove("click-nav-highlight"), 1300);
+
+        setCursorFn(line + 1); // data-source-line is 0-indexed, setCursorToLine is 1-indexed
+        return;
+      }
+      el = el.parentElement;
+    }
+  });
+}

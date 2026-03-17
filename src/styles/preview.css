@@ -132,3 +132,16 @@
 #preview-content strong {
   font-weight: 700;
 }
+
+#preview-content [data-source-line] {
+  cursor: pointer;
+}
+
+@keyframes click-nav-flash {
+  0%   { background-color: color-mix(in srgb, var(--accent) 15%, transparent); }
+  100% { background-color: transparent; }
+}
+
+#preview-content .click-nav-highlight {
+  animation: click-nav-flash 1.2s ease-out;
+}
