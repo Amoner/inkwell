@@ -4,6 +4,7 @@ export const state = {
   isDirty: false,
   theme: "system",
   viewMode: "split",
+  panesSwapped: false,
   _listeners: new Map(),
 
   set(key, value) {

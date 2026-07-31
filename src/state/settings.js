@@ -9,6 +9,11 @@ export async function loadSettings() {
     if (savedTheme) {
       state.set("theme", savedTheme);
     }
+
+    const savedPaneSwap = localStorage.getItem("inkwell-panes-swapped");
+    if (savedPaneSwap !== null) {
+      state.set("panesSwapped", savedPaneSwap === "true");
+    }
   } catch {
     // localStorage may not be available in some contexts
   }
@@ -17,6 +22,14 @@ export async function loadSettings() {
 export function saveTheme(theme) {
   try {
     localStorage.setItem("inkwell-theme", theme);
+  } catch {
+    // Silently fail
+  }
+}
+
+export function savePaneSwap(swapped) {
+  try {
+    localStorage.setItem("inkwell-panes-swapped", String(swapped));
   } catch {
     // Silently fail
   }

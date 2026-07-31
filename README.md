@@ -47,7 +47,7 @@ Inkwell is built with [Tauri](https://tauri.app), which uses your system's nativ
 ### Split editor + rendered preview
 <img src="assets/editing.gif" alt="Split view editing" width="600">
 
-- **Split editor + preview** — Write Markdown on the left, see rendered output on the right. Scroll sync keeps both panes aligned.
+- **Split editor + preview** — Write Markdown in one pane and see rendered output in the other. Scroll sync keeps both panes aligned.
 - **Syntax highlighting** — Powered by CodeMirror 6 with full Markdown grammar support.
 - **Light & dark themes** — Toggle with one click, or follow your system preference.
 - **File associations** — Double-click any `.md` file on your system to open it directly in Inkwell.
@@ -57,6 +57,7 @@ Inkwell is built with [Tauri](https://tauri.app), which uses your system's nativ
 - **Word count & cursor position** — Always visible in the status bar.
 - **Recent files** — Quick access to your last 20 files from the welcome screen.
 - **Resizable split pane** — Drag the divider to adjust editor/preview ratio.
+- **Pane swap button** — Click the ⇄ button at the top of the divider to swap editor/preview sides.
 - **GFM support** — Tables, task lists, strikethrough, and fenced code blocks render correctly.
 - **Responsive layout** — Adapts to narrow windows automatically.
 
