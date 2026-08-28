@@ -1,6 +1,6 @@
 [package]
 name = "inkwell"
-version = "0.2.3"
+version = "0.2.4"
 description = "A lightweight cross-platform Markdown editor"
 authors = ["Inkwell Contributors"]
 license = "MIT"
