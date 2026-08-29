@@ -237,6 +237,9 @@ function toggleTheme() {
   state.set("theme", next);
   applyTheme(next);
   saveTheme(next);
+  // Mermaid diagrams are drawn in the theme's colours, so they have to be
+  // redrawn when it changes.
+  renderPreview(getContent());
 }
 
 function setViewMode(mode) {

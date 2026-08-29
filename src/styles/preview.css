@@ -129,6 +129,24 @@
   border-radius: 4px;
 }
 
+#preview-content .mermaid-diagram {
+  margin: 0 0 1em;
+  text-align: center;
+  overflow-x: auto;
+}
+
+#preview-content .mermaid-diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+#preview-content .mermaid-error {
+  font-family: var(--font-mono);
+  font-size: 0.8125em;
+  color: var(--error);
+  margin-bottom: 0.5em;
+}
+
 #preview-content .missing-image {
   font-family: var(--font-sans);
   font-size: 0.875em;
