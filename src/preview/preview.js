@@ -1,5 +1,7 @@
 import MarkdownIt from "markdown-it";
 import DOMPurify from "dompurify";
+import { state } from "../state/app-state.js";
+import { dirName, resolveImageSrc } from "./asset-src.js";
 
 let previewElement = null;
 
@@ -59,6 +61,47 @@ for (const tokenType of blockTokens) {
   };
 }
 
+// Hold the author's path in data-src and leave src unset. Local images are
+// resolved after sanitizing (see rewriteImageSources), and an unset src also
+// stops the webview firing a doomed request for the unresolved path.
+md.renderer.rules.image = function (tokens, idx, options, env, self) {
+  const token = tokens[idx];
+  token.attrs[token.attrIndex("alt")][1] = self.renderInlineAsText(
+    token.children,
+    options,
+    env
+  );
+  const srcIndex = token.attrIndex("src");
+  if (srcIndex >= 0) {
+    token.attrs[srcIndex][0] = "data-src";
+  }
+  return self.renderToken(tokens, idx, options);
+};
+
+function rewriteImageSources(root) {
+  const docDir = dirName(state.filePath);
+
+  root.querySelectorAll("img[data-src]").forEach((img) => {
+    const rawSrc = img.getAttribute("data-src");
+    const resolved = resolveImageSrc(rawSrc, docDir);
+    img.removeAttribute("data-src");
+
+    if (resolved.url) {
+      img.setAttribute("src", resolved.url);
+      return;
+    }
+
+    // Say why nothing appeared rather than leaving a silent gap.
+    const note = document.createElement("span");
+    note.className = "missing-image";
+    note.textContent =
+      resolved.reason === "unsaved"
+        ? `${rawSrc} — save the document to show relative images`
+        : `${rawSrc} — unsupported image source`;
+    img.replaceWith(note);
+  });
+}
+
 export function initPreview(element) {
   previewElement = element;
 }
@@ -68,7 +111,8 @@ export function renderPreview(content) {
   const html = md.render(content);
   previewElement.innerHTML = DOMPurify.sanitize(html, {
     USE_PROFILES: { html: true },
-    ADD_ATTR: ["disabled", "checked", "data-source-line"],
+    ADD_ATTR: ["disabled", "checked", "data-source-line", "data-src"],
     ADD_TAGS: ["input"],
   });
+  rewriteImageSources(previewElement);
 }
