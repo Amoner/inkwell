@@ -2,6 +2,7 @@ import MarkdownIt from "markdown-it";
 import DOMPurify from "dompurify";
 import { state } from "../state/app-state.js";
 import { dirName, resolveImageSrc } from "./asset-src.js";
+import { renderMermaidBlocks } from "./mermaid.js";
 
 let previewElement = null;
 
@@ -115,4 +116,5 @@ export function renderPreview(content) {
     ADD_TAGS: ["input"],
   });
   rewriteImageSources(previewElement);
+  renderMermaidBlocks(previewElement);
 }
