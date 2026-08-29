@@ -129,6 +129,13 @@
   border-radius: 4px;
 }
 
+#preview-content .missing-image {
+  font-family: var(--font-sans);
+  font-size: 0.875em;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
 #preview-content strong {
   font-weight: 700;
 }
